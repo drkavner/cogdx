@@ -1,0 +1,11 @@
+timestamp,prospect,segment,channel,handle_or_contact,status,priority,score,next_action,notes
+2026-03-01T00:19:00-05:00,Prospect-01,agent-builder,X,,qualified,HIGH,8,find_handle_then_send,likely fastest to pilot
+2026-03-01T00:19:00-05:00,Prospect-02,agent-builder,X,,qualified,HIGH,8,find_handle_then_send,api-first operator target
+2026-03-01T00:19:00-05:00,Prospect-03,agent-builder,Discord,,researching,MEDIUM,6,find_handle_then_send,community-based builder
+2026-03-01T00:19:00-05:00,Prospect-04,creator-automation,X,,qualified,HIGH,8,find_handle_then_send,creator ops pain is urgent
+2026-03-01T00:19:00-05:00,Prospect-05,creator-automation,Email,,researching,MEDIUM,6,find_email_then_send,email path slower than DM
+2026-03-01T00:19:00-05:00,Prospect-06,creator-automation,Discord,,researching,MEDIUM,6,find_handle_then_send,likely needs proof sample
+2026-03-01T00:19:00-05:00,Prospect-07,trading-automation,X,,qualified,HIGH,7,find_handle_then_send,high-value if trust metrics resonate
+2026-03-01T00:19:00-05:00,Prospect-08,trading-automation,Telegram,,qualified,HIGH,7,find_handle_then_send,direct fit for async pilot
+2026-03-01T00:19:00-05:00,Prospect-09,agent-builder,GitHub,,researching,MEDIUM,6,find_contact_then_send,can route via repo discussions
+2026-03-01T00:19:00-05:00,Prospect-10,agent-builder,X,,qualified,HIGH,8,find_handle_then_send,good candidate for tonight close

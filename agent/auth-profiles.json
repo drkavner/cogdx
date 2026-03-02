@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "profiles": {
+    "anthropic:default": {
+      "type": "token",
+      "provider": "anthropic",
+      "token": "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"
+    },
+    "google-gemini-cli:drkavner@cerebratech.xyz": {
+      "type": "oauth",
+      "provider": "google-gemini-cli",
+      "access": "ya29.a0ATkoCc6IDfIrNe8j18tTL42wUJHmSSQZwFKYGmdIWO1t0elDIol4d-aPYtx5uH9-kyKKqsm6-uNQOERLMEX7eVr43CaAGvgOut84MejHyxfJg_42yLCj6954zJCsb3VbK7GdxpxQmFNgQ3uWYWi-vAdCb1Hl5UZ6Jt9H-p5o35P3J7ie-eS3_RmWNxuy8oEmfdHbmQ9LA-EkVe8aCgYKAb0SARESFQHGX2MiR1S8wa1KmtF3Hfm9AsAdvg0214",
+      "refresh": "1//0hdy9-DH1NdXWCgYIARAAGBESNwF-L9Ir2ZnMh4k0isPMTy5rRnP9JrEcacLMNVZ3zFsyARGcoFZP-1iPz3wlPQaPxD_xnBm8lxI",
+      "expires": 1772488715406,
+      "email": "drkavner@cerebratech.xyz",
+      "projectId": "xenon-carport-62lb2"
+    },
+    "together:default": {
+      "type": "api_key",
+      "provider": "together",
+      "key": "2e1b65ca953b8f97ed7cf251e46afbcea671668a0a2547e63c861811846cd86a"
+    },
+    "openai-codex:default": {
+      "type": "oauth",
+      "provider": "openai-codex",
+      "access": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjE5MzQ0ZTY1LWJiYzktNDRkMS1hOWQwLWY5NTdiMDc5YmQwZSIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSJdLCJjbGllbnRfaWQiOiJhcHBfRU1vYW1FRVo3M2YwQ2tYYVhwN2hyYW5uIiwiZXhwIjoxNzczMzQ1Nzk3LCJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiNTI4NmE4NjItMjNmNS00MTFhLWE1MWEtNGZmNGYyNDljZTgwIiwiY2hhdGdwdF9hY2NvdW50X3VzZXJfaWQiOiJ1c2VyLUJuT3YyUm1VcGttM3FXOEJ4UXRCcWN6RV9fNTI4NmE4NjItMjNmNS00MTFhLWE1MWEtNGZmNGYyNDljZTgwIiwiY2hhdGdwdF9jb21wdXRlX3Jlc2lkZW5jeSI6Im5vX2NvbnN0cmFpbnQiLCJjaGF0Z3B0X3BsYW5fdHlwZSI6InRlYW0iLCJjaGF0Z3B0X3VzZXJfaWQiOiJ1c2VyLUJuT3YyUm1VcGttM3FXOEJ4UXRCcWN6RSIsInVzZXJfaWQiOiJ1c2VyLUJuT3YyUm1VcGttM3FXOEJ4UXRCcWN6RSJ9LCJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJkcmthdm5lckBjZXJlYnJhdGVjaC54eXoiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sImlhdCI6MTc3MjQ4MTc5NywiaXNzIjoiaHR0cHM6Ly9hdXRoLm9wZW5haS5jb20iLCJqdGkiOiIyMWJhZDNkNi1iM2VlLTQwYjYtYjMwNC0xNDY5Nzk2NWI4NWEiLCJuYmYiOjE3NzI0ODE3OTcsInB3ZF9hdXRoX3RpbWUiOjE3NzI0ODE3OTY2MTcsInNjcCI6WyJvcGVuaWQiLCJwcm9maWxlIiwiZW1haWwiLCJvZmZsaW5lX2FjY2VzcyJdLCJzZXNzaW9uX2lkIjoiYXV0aHNlc3NfQVR5ZnFJeGIzNGxQTzhFeEswb0NudWdMIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTM5NjMwMTcxMzQxMTc0NjA0NDkifQ.Z2Ur7DQ14fmTq5dfqmipBZUS1Ui-d7qS_cAO8UVubt6W0FJkYN8zJ71SLomppKFK_5va_67fICU_HuCX9EtuO1QR_tpMhDcVuWWxzu2T6vOzj7kfymkqE68OtutR1b2SC7tHD6AcMbTJh3yjKY17oWCkZQ6UJJS7a1Fx_Q-ZnmmevLgXUkJ6hT_rZwW-CfN_6cbCADMueJq-f4tBtjVmNZnjNaAbqnntuVn-nB9Q7akiPoQDXArm5L89j7AqmfEcf5lKDU6AXYLHF_jmnGljknviICuas_Di9-H5DfSBrnJA2eI25aCv6fRdOmaxzGzjm_nLsVxTwYJrd2cJ9D-mlgx_GCTyku26frBqQl8R9nCsgLqYsrweiiGl7cGuFaBmtf8CTvgM1QkwlI791VDsezI6ipQEwkjLxLqG0MMMM0htejBXSciscG2IwU7EDChBfITL08BeUTLGrw5yKSpdRvdhYPmR61qUPCwRlAh4iOGhE9y8sqXnCOJHnfw29YRZ9pi1hQHQ6bUdfqRgEbZdNg9Gzv3QzgKT82iSDM6UleaW1gGeYKVYDCSfQPfEFZri7rtVmlQYd6JSSfs2C7qNb9S0Wum2IalihbrdLiLkp8AMfOsN4xmuP7ZOeZ7frsF8aIFSctVfCyB9y34VQQ33FsNqQb8VofywSQjfnHF_N9M",
+      "refresh": "rt_hPbuDh_yRT5aR8hUQJoaiPhFIu82ow9easAt3BtyfVo.E_EX__9CnN06AjDwqLDacIugoiQZ-dcSZ-8ImDRZ5TU",
+      "expires": 1773345796465,
+      "accountId": "5286a862-23f5-411a-a51a-4ff4f249ce80"
+    },
+    "google:default": {
+      "type": "api_key",
+      "provider": "google",
+      "key": "AIzaSyAoddKH0dwog-EYL2YBgdIxDGJo-hgudxE"
+    }
+  },
+  "lastGood": {
+    "google-gemini-cli": "google-gemini-cli:drkavner@cerebratech.xyz",
+    "anthropic": "anthropic:default",
+    "openai-codex": "openai-codex:default",
+    "together": "together:default"
+  },
+  "usageStats": {
+    "google-gemini-cli:drkavner@cerebratech.xyz": {
+      "lastUsed": 1771961693344,
+      "errorCount": 2,
+      "lastFailureAt": 1772292797505,
+      "failureCounts": {
+        "rate_limit": 2
+      },
+      "cooldownUntil": 1772293097505
+    },
+    "anthropic:default": {
+      "lastUsed": 1772459235777,
+      "errorCount": 0,
+      "lastFailureAt": 1772299987229
+    },
+    "openai-codex:default": {
+      "lastUsed": 1772384290225,
+      "errorCount": 3,
+      "failureCounts": {
+        "rate_limit": 3
+      },
+      "lastFailureAt": 1772465667992,
+      "cooldownUntil": 1772467167992
+    },
+    "together:default": {
+      "lastUsed": 1772292823089,
+      "errorCount": 0
+    }
+  }
+}

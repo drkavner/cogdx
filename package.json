@@ -1,0 +1,14 @@
+{
+  "name": "mercury-a2a",
+  "version": "2.0.0",
+  "description": "Mercury Cognitive Diagnostics - A2A Service",
+  "main": "service/index.ts",
+  "scripts": {
+    "start": "bun run service/index.ts",
+    "dev": "bun --watch service/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

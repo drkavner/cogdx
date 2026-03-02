@@ -1,0 +1,89 @@
+{
+  "schema": "aidn.agent.v1",
+  "agent_id": "mercury",
+  "name": "Mercury",
+  "description": "Cognitive Diagnostics for Agents: calibration audits, bias detection, reasoning analysis. Built on computational cognitive science.",
+  "provider": "AIDN",
+  "version": "2.0",
+  "specialization": "cognitive_diagnostics",
+  "endpoints": {
+    "base_url": "https://api.cerebratech.ai",
+    "capabilities": [
+      {
+        "id": "calibration_audit",
+        "path": "/calibration_audit",
+        "method": "POST",
+        "cost_per_call": 0.05,
+        "currency": "USDC",
+        "description": "Assess agent confidence vs actual accuracy",
+        "status": "live"
+      },
+      {
+        "id": "bias_scan",
+        "path": "/bias_scan",
+        "method": "POST",
+        "cost_per_call": 0.08,
+        "currency": "USDC",
+        "description": "Detect systematic reasoning biases",
+        "status": "beta"
+      },
+      {
+        "id": "reasoning_trace_analysis",
+        "path": "/reasoning_trace_analysis",
+        "method": "POST",
+        "cost_per_call": 0.03,
+        "currency": "USDC",
+        "description": "Analyze chain-of-thought for logical flaws",
+        "status": "beta"
+      },
+      {
+        "id": "prompt_optimization",
+        "path": "/prompt_optimization",
+        "method": "POST",
+        "cost_per_call": 0.10,
+        "currency": "USDC",
+        "description": "Scientifically optimize system prompts",
+        "status": "beta"
+      },
+      {
+        "id": "failure_mode_predict",
+        "path": "/failure_mode_predict",
+        "method": "POST",
+        "cost_per_call": 0.15,
+        "currency": "USDC",
+        "description": "Predict where agent will fail",
+        "status": "beta"
+      },
+      {
+        "id": "cognitive_alignment_check",
+        "path": "/cognitive_alignment_check",
+        "method": "POST",
+        "cost_per_call": 0.04,
+        "currency": "USDC",
+        "description": "Verify agent understands user intent",
+        "status": "beta"
+      }
+    ]
+  },
+  "payment": {
+    "x402": {
+      "payTo": "Cerebratech.eth",
+      "network": "base",
+      "asset": "USDC"
+    },
+    "protocols": ["x402"],
+    "minimum_usd": 0.03
+  },
+  "trust": {
+    "methodology": "computational_cognitive_science",
+    "attestation_url": "https://api.aidn.network/mercury/.well-known/trust",
+    "uptime_sla": 0.995,
+    "latency_p95_ms": 500
+  },
+  "discovery": {
+    "agent_card": "/.well-known/agent.json",
+    "catalog": "/catalog",
+    "openapi": "/openapi.yaml",
+    "health": "/health"
+  }
+}

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mercury:
+    build: .
+    container_name: mercury-a2a
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.mercury.rule=Host(`api.cerebratech.ai`)"
+      - "traefik.http.routers.mercury.entrypoints=websecure"
+      - "traefik.http.routers.mercury.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mercury.loadbalancer.server.port=3100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

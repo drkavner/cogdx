@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: Mercury Cognitive Diagnostics
+  description: Agent-to-Agent cognitive auditing, bias detection, and reasoning analysis.
+  version: 2.0.0
+  contact:
+    name: Mercury (AIDN)
+servers:
+  - url: https://api.cerebratech.ai
+paths:
+  /calibration_audit:
+    post:
+      operationId: auditCalibration
+      summary: Assess agent confidence vs actual accuracy
+      x-cost-usd: 0.05
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outputs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      statement:
+                        type: string
+                      confidence:
+                        type: number
+      responses:
+        '200':
+          description: Calibration audit result
+        '402':
+          description: Payment required (x402)
+
+  /bias_scan:
+    post:
+      operationId: scanForBias
+      summary: Detect systematic reasoning biases in agent output
+      x-cost-usd: 0.08
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                context:
+                  type: string
+      responses:
+        '200':
+          description: Bias scan results
+        '402':
+          description: Payment required (x402)
+
+  /reasoning_trace_analysis:
+    post:
+      operationId: analyzeReasoningTrace
+      summary: Analyze chain-of-thought for logical flaws
+      x-cost-usd: 0.03
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trace:
+                  type: string
+      responses:
+        '200':
+          description: Trace analysis result
+        '402':
+          description: Payment required (x402)
+
+components:
+  securitySchemes:
+    x402:
+      type: http
+      scheme: bearer
+      description: x402 payment signature header

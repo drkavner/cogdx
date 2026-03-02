@@ -1,0 +1,7 @@
+timestamp,prospect,channel,message_variant,sent_by,status,response_due_at,response_status,notes
+2026-03-01T01:34:00-05:00,Prospect-01,X,variant-A,mercury,ready,2026-03-01T13:34:00-05:00,pending,
+2026-03-01T01:34:00-05:00,Prospect-02,X,variant-B,mercury,ready,2026-03-01T13:34:00-05:00,pending,
+2026-03-01T01:34:00-05:00,Prospect-04,X,variant-C,mercury,ready,2026-03-01T13:34:00-05:00,pending,
+2026-03-01T01:34:00-05:00,Prospect-07,X,variant-A,mercury,ready,2026-03-01T13:34:00-05:00,pending,
+2026-03-01T01:34:00-05:00,Prospect-08,Telegram,variant-B,mercury,ready,2026-03-01T13:34:00-05:00,pending,
+2026-03-01T01:34:00-05:00,Prospect-10,X,variant-C,mercury,ready,2026-03-01T13:34:00-05:00,pending,
