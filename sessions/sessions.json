@@ -1,7 +1,7 @@
 {
   "agent:mercury:main": {
     "sessionId": "e77cef34-757d-4203-9e6c-b84f7c3d972d",
-    "updatedAt": 1772485210191,
+    "updatedAt": 1772516014691,
     "systemSent": true,
     "abortedLastRun": false,
     "chatType": "direct",
@@ -269,16 +269,16 @@
       ],
       "version": 0
     },
-    "modelProvider": "google-gemini-cli",
-    "model": "gemini-3-flash-preview",
-    "contextTokens": 1048576,
+    "modelProvider": "openai-codex",
+    "model": "gpt-5.3-codex",
+    "contextTokens": 272000,
     "systemPromptReport": {
       "source": "run",
-      "generatedAt": 1772485080806,
+      "generatedAt": 1772506868814,
       "sessionId": "e77cef34-757d-4203-9e6c-b84f7c3d972d",
       "sessionKey": "agent:mercury:main",
-      "provider": "google-gemini-cli",
-      "model": "gemini-3-flash-preview",
+      "provider": "openai-codex",
+      "model": "gpt-5.3-codex",
       "workspaceDir": "/home/doc/.openclaw/agents/mercury",
       "bootstrapMaxChars": 20000,
       "bootstrapTotalMaxChars": 150000,
@@ -287,9 +287,9 @@
         "sandboxed": false
       },
       "systemPrompt": {
-        "chars": 23195,
+        "chars": 22742,
         "projectContextChars": 5808,
-        "nonProjectContextChars": 17387
+        "nonProjectContextChars": 16934
       },
       "injectedWorkspaceFiles": [
         {
@@ -440,7 +440,7 @@
       },
       "tools": {
         "listChars": 2082,
-        "schemaChars": 16083,
+        "schemaChars": 16410,
         "entries": [
           {
             "name": "read",
@@ -463,19 +463,19 @@
           {
             "name": "exec",
             "summaryChars": 181,
-            "schemaChars": 1037,
+            "schemaChars": 1086,
             "propertiesCount": 12
           },
           {
             "name": "process",
             "summaryChars": 85,
-            "schemaChars": 949,
+            "schemaChars": 961,
             "propertiesCount": 12
           },
           {
             "name": "browser",
             "summaryChars": 1251,
-            "schemaChars": 1893,
+            "schemaChars": 1921,
             "propertiesCount": 29
           },
           {
@@ -487,7 +487,7 @@
           {
             "name": "nodes",
             "summaryChars": 115,
-            "schemaChars": 1741,
+            "schemaChars": 1758,
             "propertiesCount": 36
           },
           {
@@ -511,31 +511,31 @@
           {
             "name": "sessions_list",
             "summaryChars": 54,
-            "schemaChars": 176,
+            "schemaChars": 212,
             "propertiesCount": 4
           },
           {
             "name": "sessions_history",
             "summaryChars": 36,
-            "schemaChars": 149,
+            "schemaChars": 161,
             "propertiesCount": 3
           },
           {
             "name": "sessions_send",
             "summaryChars": 84,
-            "schemaChars": 203,
+            "schemaChars": 273,
             "propertiesCount": 5
           },
           {
             "name": "sessions_spawn",
             "summaryChars": 134,
-            "schemaChars": 525,
+            "schemaChars": 549,
             "propertiesCount": 13
           },
           {
             "name": "subagents",
             "summaryChars": 105,
-            "schemaChars": 179,
+            "schemaChars": 191,
             "propertiesCount": 4
           },
           {
@@ -547,13 +547,13 @@
           {
             "name": "web_search",
             "summaryChars": 123,
-            "schemaChars": 870,
+            "schemaChars": 895,
             "propertiesCount": 6
           },
           {
             "name": "web_fetch",
             "summaryChars": 129,
-            "schemaChars": 360,
+            "schemaChars": 374,
             "propertiesCount": 3
           },
           {
@@ -577,15 +577,15 @@
           {
             "name": "voice_call",
             "summaryChars": 72,
-            "schemaChars": 423,
+            "schemaChars": 451,
             "propertiesCount": 6
           }
         ]
       }
     },
-    "inputTokens": 56403,
-    "outputTokens": 438,
-    "cacheRead": 0,
+    "inputTokens": 64149,
+    "outputTokens": 669,
+    "cacheRead": 64640,
     "cacheWrite": 0,
     "totalTokensFresh": true,
     "lastChannel": "telegram",
@@ -596,10 +596,10 @@
     "authProfileOverrideSource": "auto",
     "authProfileOverrideCompactionCount": 1,
     "fallbackNoticeSelectedModel": "google-gemini-cli/gemini-3-pro-preview",
-    "fallbackNoticeActiveModel": "google-gemini-cli/gemini-3-flash-preview",
-    "fallbackNoticeReason": "rate limit (+11 more attempts)",
-    "totalTokens": 56403,
-    "memoryFlushAt": 1772485210191,
+    "fallbackNoticeActiveModel": "openai-codex/gpt-5.3-codex",
+    "fallbackNoticeReason": "rate limit (+7 more attempts)",
+    "totalTokens": 65341,
+    "memoryFlushAt": 1772516014691,
     "memoryFlushCompactionCount": 1
   },
   "telegram:slash:1570743349": {

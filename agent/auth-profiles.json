@@ -9,9 +9,9 @@
     "google-gemini-cli:drkavner@cerebratech.xyz": {
       "type": "oauth",
       "provider": "google-gemini-cli",
-      "access": "ya29.a0ATkoCc6IDfIrNe8j18tTL42wUJHmSSQZwFKYGmdIWO1t0elDIol4d-aPYtx5uH9-kyKKqsm6-uNQOERLMEX7eVr43CaAGvgOut84MejHyxfJg_42yLCj6954zJCsb3VbK7GdxpxQmFNgQ3uWYWi-vAdCb1Hl5UZ6Jt9H-p5o35P3J7ie-eS3_RmWNxuy8oEmfdHbmQ9LA-EkVe8aCgYKAb0SARESFQHGX2MiR1S8wa1KmtF3Hfm9AsAdvg0214",
+      "access": "ya29.a0ATkoCc5iGRXYaE0ya7TmHhERXJZ-1EhJhyTdU6sSa2PKsLyisf4Fgs7jL9e2zxbKDVF7f4mUan-9fCapqETvsOhhjBx1l5Q2L4BWQ2OazLJ_9A1Pgasa07Lx2G1S_W3sIlS2uh_UmZKpdPtACm6bSbsixvNU121_lk0ZKUt4kTYZy23iw4cxonbyMwpi_ldCkhxNpajBcRXYkp0aCgYKAWASARESFQHGX2MiCBv-gUUg2lfD5jzimhVYlg0214",
       "refresh": "1//0hdy9-DH1NdXWCgYIARAAGBESNwF-L9Ir2ZnMh4k0isPMTy5rRnP9JrEcacLMNVZ3zFsyARGcoFZP-1iPz3wlPQaPxD_xnBm8lxI",
-      "expires": 1772488715406,
+      "expires": 1772484833115,
       "email": "drkavner@cerebratech.xyz",
       "projectId": "xenon-carport-62lb2"
     },
@@ -42,13 +42,13 @@
   },
   "usageStats": {
     "google-gemini-cli:drkavner@cerebratech.xyz": {
-      "lastUsed": 1771961693344,
-      "errorCount": 2,
-      "lastFailureAt": 1772292797505,
+      "lastUsed": 1772487247076,
+      "errorCount": 1,
+      "lastFailureAt": 1772516060432,
       "failureCounts": {
-        "rate_limit": 2
+        "rate_limit": 1
       },
-      "cooldownUntil": 1772293097505
+      "cooldownUntil": 1772516120432
     },
     "anthropic:default": {
       "lastUsed": 1772459235777,
