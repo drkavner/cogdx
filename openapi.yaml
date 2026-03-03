@@ -82,7 +82,7 @@ paths:
       operationId: verifyConsensus
       summary: Verify a claim through independent consensus
       description: Routes claim to multiple independent verification sources and returns consensus-weighted verdict.
-      x-cost-usd: 0.15
+      x-cost-usd: 0.25
       requestBody:
         required: true
         content:

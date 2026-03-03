@@ -24,7 +24,7 @@ const PRICING: Record<string, { price: string; priceNum: number; maxAge: number 
   "/prompt_optimization": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/failure_mode_predict": { price: "$0.15", priceNum: 0.15, maxAge: 3600 },
   "/cognitive_alignment_check": { price: "$0.04", priceNum: 0.04, maxAge: 3600 },
-  "/verify_consensus": { price: "$0.15", priceNum: 0.15, maxAge: 3600 }, // Standard depth default
+  "/verify_consensus": { price: "$0.25", priceNum: 0.25, maxAge: 3600 }, // Standard depth default
 };
 
 // Generate x402 PaymentRequired response

@@ -1,5 +1,5 @@
 /**
- * Consensus Verification Oracle - MVP
+ * Consensus Verification Oracle - Real Sources
  * Independent verification through multiple sources
  */
 
@@ -99,79 +99,124 @@ Respond in JSON format:
 
 type VerifierType = keyof typeof VERIFICATION_PROMPTS;
 
-// Simulated verification (MVP - will integrate real APIs later)
+const BRAVE_API_KEY = process.env.BRAVE_API_KEY || "";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
+const OPENROUTER_MODELS = (process.env.OPENROUTER_MODELS || "anthropic/claude-3.5-sonnet,openai/gpt-4o-mini,google/gemini-2.0-flash").split(",").map(s => s.trim()).filter(Boolean);
+const MAX_TOKENS = Number(process.env.VERIFY_CONSENSUS_MAX_TOKENS || 256);
+const MAX_COST_USD = Number(process.env.VERIFY_CONSENSUS_MAX_COST_USD || 0.10);
+
+function extractJson(text: string): any {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[0]);
+  } catch {
+    return null;
+  }
+}
+
+async function callOpenRouter(model: string, prompt: string): Promise<any> {
+  if (!OPENROUTER_API_KEY) {
+    throw new Error("OPENROUTER_API_KEY missing");
+  }
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://api.cerebratech.ai",
+      "X-Title": "Cerebratech Verify Consensus",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: "You are a verification agent. Output ONLY valid JSON." },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: MAX_TOKENS,
+      temperature: 0.2,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenRouter error: ${res.status} ${errText}`);
+  }
+
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content || "";
+  const parsed = extractJson(content);
+  return parsed || { agrees: null, confidence: 0.0, evidence: "Unparseable response", issues: ["invalid_json"] };
+}
+
+// Real model verification via OpenRouter
 async function runVerifier(
   verifierType: VerifierType,
   claim: string,
-  context: string
+  context: string,
+  model: string,
+  independenceScore: number
 ): Promise<SourceResult> {
   const prompt = VERIFICATION_PROMPTS[verifierType](claim, context);
-  
-  // MVP: Simulated responses based on claim analysis
-  // TODO: Replace with actual API calls to different model providers
-  
-  const timestamp = new Date().toISOString();
-  
-  // Basic heuristics for MVP (will be replaced with real verification)
-  const claimLower = claim.toLowerCase();
-  
-  // Detect obviously true/false patterns
-  const obviouslyTrue = /^(the sun|water|earth|humans|2\+2|1\+1)/i.test(claim);
-  const obviouslyFalse = /^(the moon is made of cheese|pigs can fly|2\+2=5)/i.test(claim);
-  const isOpinion = /(best|worst|should|beautiful|ugly|good|bad)\b/i.test(claim);
-  
-  let agrees: boolean | null = null;
-  let confidence = 0.5;
-  let evidence = "Verification pending - MVP mode";
-  
-  if (obviouslyTrue) {
-    agrees = true;
-    confidence = 0.95;
-    evidence = "Claim matches well-established facts.";
-  } else if (obviouslyFalse) {
-    agrees = false;
-    confidence = 0.95;
-    evidence = "Claim contradicts well-established facts.";
-  } else if (isOpinion) {
-    agrees = null;
-    confidence = 0.3;
-    evidence = "Claim appears to be opinion/subjective, not factual.";
-  } else {
-    // For MVP, indicate this needs real verification
-    agrees = null;
-    confidence = 0.4;
-    evidence = "Claim requires external verification sources. MVP mode - full verification coming soon.";
-  }
-  
-  // Add slight variance based on verifier type
-  if (verifierType === "skeptical" && agrees === true) {
-    confidence *= 0.9;
-  }
-  if (verifierType === "charitable" && agrees === false) {
-    confidence *= 0.9;
-  }
-  
+  const result = await callOpenRouter(model, prompt);
+  const agrees = typeof result.agrees === "boolean" ? result.agrees : null;
+  const evidence = result.evidence || "";
+
   return {
-    source_id: `verifier_${verifierType}`,
+    source_id: `model:${model}:${verifierType}`,
     source_type: "model",
-    independence_score: verifierType === "factual" ? 0.7 : 0.5, // Different perspectives = some independence
+    independence_score: independenceScore,
     agrees,
     evidence,
-    retrieval_timestamp: timestamp,
+    retrieval_timestamp: new Date().toISOString(),
   };
 }
 
-// Web search verification (uses environment's search capability)
+// Web search verification via Brave
 async function searchVerify(claim: string): Promise<SourceResult> {
-  // MVP: Placeholder for web search integration
-  // TODO: Integrate with Brave Search API or similar
-  
+  if (!BRAVE_API_KEY) {
+    return {
+      source_id: "web_search_brave",
+      source_type: "search",
+      independence_score: 0.9,
+      agrees: null,
+      evidence: "BRAVE_API_KEY missing; search grounding unavailable.",
+      retrieval_timestamp: new Date().toISOString(),
+    };
+  }
+
+  const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(claim)}&count=3`;
+  const res = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "X-Subscription-Token": BRAVE_API_KEY,
+    },
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    return {
+      source_id: "web_search_brave",
+      source_type: "search",
+      independence_score: 0.9,
+      agrees: null,
+      evidence: `Brave search error: ${res.status} ${errText}`,
+      retrieval_timestamp: new Date().toISOString(),
+    };
+  }
+
+  const data = await res.json();
+  const results = data?.web?.results || [];
+  const snippets = results.slice(0, 3).map((r: any, i: number) => `${i + 1}. ${r.title} — ${r.description} (${r.url})`);
+  const evidence = snippets.length ? snippets.join("\n") : "No search results returned.";
+
   return {
     source_id: "web_search_brave",
     source_type: "search",
-    independence_score: 0.9, // Web search is highly independent
+    independence_score: 0.9,
     agrees: null,
-    evidence: "Web search verification pending integration. MVP mode.",
+    evidence,
     retrieval_timestamp: new Date().toISOString(),
   };
 }
@@ -292,32 +337,49 @@ export async function verifyConsensus(request: VerifyRequest): Promise<VerifyRes
     throw new Error("agent_id and claim are required");
   }
   
+  // Pricing guardrails by depth
+  const depthCosts: Record<string, number> = { quick: 0.10, standard: 0.25, deep: 0.50 };
+  const requiredCost = depthCosts[verification_depth] ?? depthCosts.standard;
+  if (requiredCost > MAX_COST_USD) {
+    throw new Error(`Requested depth '${verification_depth}' exceeds max budget $${MAX_COST_USD.toFixed(2)}. Use a lower depth or increase VERIFY_CONSENSUS_MAX_COST_USD.`);
+  }
+
   // Select verifiers based on depth
   const verifierSets: Record<string, VerifierType[]> = {
-    quick: ["factual", "skeptical"],
-    standard: ["factual", "skeptical", "charitable"],
-    deep: ["factual", "skeptical", "charitable", "temporal"],
+    quick: ["factual"],
+    standard: ["factual", "skeptical"],
+    deep: ["factual", "skeptical", "charitable"],
   };
-  
   const verifiers = verifierSets[verification_depth] || verifierSets.standard;
-  
+
+  // Search grounding first
+  const searchResult = await searchVerify(claim);
+  const searchContext = searchResult?.evidence ? `\n\nSearch evidence:\n${searchResult.evidence}` : "";
+  const combinedContext = `${context}${searchContext}`.trim();
+
+  // Assign models per verifier for independence
+  if (OPENROUTER_MODELS.length < 2) {
+    throw new Error("OPENROUTER_MODELS must include at least 2 models for independent verification.");
+  }
+  const assignedModels = verifiers.map((_, i) => OPENROUTER_MODELS[i % OPENROUTER_MODELS.length]);
+  const uniqueModels = new Set(assignedModels);
+
   // Run all verifiers in parallel
-  const verifierPromises = verifiers.map(v => runVerifier(v, claim, context));
-  const searchPromise = searchVerify(claim);
-  
-  const [searchResult, ...verifierResults] = await Promise.all([
-    searchPromise,
-    ...verifierPromises,
-  ]);
-  
+  const verifierPromises = verifiers.map((v, i) => {
+    const model = assignedModels[i];
+    const independenceScore = uniqueModels.size > 1 ? 0.7 : 0.5;
+    return runVerifier(v, claim, combinedContext, model, independenceScore);
+  });
+
+  const verifierResults = await Promise.all(verifierPromises);
   const sources = [searchResult, ...verifierResults];
-  
+
   // Calculate consensus
   const { consensus_level, confidence, verdict } = calculateConsensus(sources);
-  
+
   // Find disagreements
   const disagreements = findDisagreements(sources);
-  
+
   // Determine epistemic status
   const epistemic_status = determineEpistemicStatus(
     consensus_level,
@@ -325,7 +387,7 @@ export async function verifyConsensus(request: VerifyRequest): Promise<VerifyRes
     verdict,
     sources
   ) as VerifyResponse["epistemic_status"];
-  
+
   return {
     claim,
     consensus_level,
@@ -334,7 +396,7 @@ export async function verifyConsensus(request: VerifyRequest): Promise<VerifyRes
     sources,
     disagreements,
     epistemic_status,
-    methodology: `MVP verification using ${sources.length} sources (${verification_depth} depth). Independence-weighted consensus calculation. Full multi-provider verification coming soon.`,
+    methodology: `Consensus verification using ${sources.length} sources (${verification_depth} depth) with Brave search grounding + OpenRouter multi-model verifiers. Independence-weighted consensus calculation.`,
     source_count: sources.length,
   };
 }
