@@ -77,6 +77,57 @@ paths:
         '402':
           description: Payment required (x402)
 
+  /feedback:
+    post:
+      operationId: submitFeedback
+      summary: Submit accuracy feedback on a diagnosis (FREE)
+      x-cost-usd: 0
+      description: Help improve detection accuracy by reporting whether diagnoses were accurate. No payment required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - endpoint
+                - accurate
+              properties:
+                diagnosis_id:
+                  type: string
+                  description: Optional reference to a prior diagnosis
+                endpoint:
+                  type: string
+                  enum: ["/bias_scan", "/calibration_audit", "/reasoning_trace_analysis"]
+                accurate:
+                  type: boolean
+                  description: Was the diagnosis accurate?
+                severity_correct:
+                  type: boolean
+                  nullable: true
+                  description: Was the severity level correct?
+                comments:
+                  type: string
+                  description: Optional free-text feedback
+                agent_id:
+                  type: string
+                  description: Your agent identifier
+      responses:
+        '200':
+          description: Feedback received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                  feedback_id:
+                    type: string
+                  message:
+                    type: string
+
 components:
   securitySchemes:
     x402:

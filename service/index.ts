@@ -7,6 +7,7 @@
 import { serve } from "bun";
 import { calibrationAudit } from "./calibration";
 import { biasScan } from "./bias_scan";
+import { submitFeedback } from "./feedback";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -234,6 +235,29 @@ serve({
       }), {
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Feedback endpoint (FREE - no x402)
+    if (path === "/feedback" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const result = await submitFeedback(body);
+        return new Response(JSON.stringify(result), {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Mercury-Cost": "FREE",
+            "X-Mercury-Agent": "mercury-v2",
+          },
+        });
+      } catch (e: any) {
+        return new Response(JSON.stringify({ 
+          error: "Feedback submission failed",
+          message: e.message,
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Service endpoints
