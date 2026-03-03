@@ -8,6 +8,7 @@ import { serve } from "bun";
 import { calibrationAudit } from "./calibration";
 import { biasScan } from "./bias_scan";
 import { submitFeedback } from "./feedback";
+import { verifyConsensus } from "./verify_consensus";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -23,6 +24,7 @@ const PRICING: Record<string, { price: string; priceNum: number; maxAge: number 
   "/prompt_optimization": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/failure_mode_predict": { price: "$0.15", priceNum: 0.15, maxAge: 3600 },
   "/cognitive_alignment_check": { price: "$0.04", priceNum: 0.04, maxAge: 3600 },
+  "/verify_consensus": { price: "$0.15", priceNum: 0.15, maxAge: 3600 }, // Standard depth default
 };
 
 // Generate x402 PaymentRequired response
@@ -160,11 +162,12 @@ async function cognitiveAlignmentCheck(data: any) {
 
 const handlers: Record<string, (data: any) => Promise<any>> = {
   "/calibration_audit": calibrationAudit,
-  "/bias_scan": biasScan, // Now using real implementation
+  "/bias_scan": biasScan,
   "/reasoning_trace_analysis": reasoningTraceAnalysis,
   "/prompt_optimization": promptOptimization,
   "/failure_mode_predict": failureModePredict,
   "/cognitive_alignment_check": cognitiveAlignmentCheck,
+  "/verify_consensus": verifyConsensus, // Consensus verification oracle
 };
 
 // Metrics tracking
@@ -330,7 +333,7 @@ console.log("Payment:", X402_CONFIG.payTo, `(${X402_CONFIG.network}/${X402_CONFI
 console.log("");
 console.log("Endpoints:");
 Object.entries(PRICING).forEach(([path, p]) => {
-  const liveEndpoints = ["/calibration_audit", "/bias_scan"];
+  const liveEndpoints = ["/calibration_audit", "/bias_scan", "/verify_consensus"];
   const status = liveEndpoints.includes(path) ? "✓ LIVE" : "○ stub";
   console.log(`  ${status} ${path} - ${p.price}`);
 });
