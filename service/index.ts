@@ -327,6 +327,58 @@ serve({
       });
     }
 
+    // Splash page
+    if (path === "/" && req.method === "GET") {
+      const endpointRows = Object.entries(PRICING)
+        .map(([p, cfg]) => `<tr><td><code>${p}</code></td><td>${cfg.price}</td><td>${p === "/verify_consensus" ? "Truth verification via independent consensus" : `Cognitive diagnostic: ${p.slice(1).replace(/_/g, " ")}`}</td></tr>`)
+        .join("");
+
+      const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cerebratech API — Cognitive Diagnostics</title>
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:980px;margin:40px auto;padding:0 16px;color:#111;line-height:1.5}
+    h1{margin-bottom:8px} .muted{color:#555}
+    table{width:100%;border-collapse:collapse;margin-top:16px} th,td{border:1px solid #ddd;padding:10px;text-align:left;vertical-align:top}
+    th{background:#f7f7f7}
+    code{background:#f1f1f1;padding:2px 6px;border-radius:6px}
+    .card{border:1px solid #ddd;border-radius:10px;padding:14px;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h1>Cerebratech API</h1>
+  <p class="muted">Cognitive infrastructure for AI agents: calibration, bias detection, and verifiable truth checks.</p>
+
+  <div class="card">
+    <strong>Payment (Agent-native):</strong> x402 on Base/USDC → <code>${X402_CONFIG.payTo}</code><br/>
+    <strong>Human payment rail:</strong> Stripe support coming soon.
+  </div>
+
+  <h2>API Endpoints</h2>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Price</th><th>Purpose</th></tr></thead>
+    <tbody>${endpointRows}</tbody>
+  </table>
+
+  <h2>Discovery</h2>
+  <ul>
+    <li><a href="/.well-known/agent.json">/.well-known/agent.json</a></li>
+    <li><a href="/openapi.yaml">/openapi.yaml</a></li>
+    <li><a href="/catalog">/catalog</a></li>
+    <li><a href="/health">/health</a></li>
+  </ul>
+
+  <h2>Feedback Finance (Coming Soon)</h2>
+  <p>Submit feedback linked to a diagnosis to earn usage credits and improve system accuracy over time.</p>
+</body>
+</html>`;
+
+      return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+
     // Feedback endpoint (FREE - no x402)
     if (path === "/feedback" && req.method === "POST") {
       try {
