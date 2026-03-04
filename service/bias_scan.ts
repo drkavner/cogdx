@@ -44,6 +44,9 @@ interface StatisticalBiasResult {
 }
 
 interface BiasScanResult {
+  diagnosis_id: string;
+  methodology_version: string;
+  confidence_score: number;
   mode: string;
   cognitive_biases?: CognitiveBiasDetection[];
   statistical_biases?: StatisticalBiasResult[];
@@ -371,6 +374,10 @@ function runStatisticalAnalysis(outputs: OutputSample[]): StatisticalBiasResult[
 // MAIN EXPORT
 // ============================================
 
+function generateDiagnosisId() {
+  return `bias_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export async function biasScan(request: BiasScanRequest): Promise<BiasScanResult> {
   const { agent_id, outputs, mode = "cognitive", bias_types = ["all"] } = request;
 
@@ -379,6 +386,9 @@ export async function biasScan(request: BiasScanRequest): Promise<BiasScanResult
   }
 
   const result: BiasScanResult = {
+    diagnosis_id: generateDiagnosisId(),
+    methodology_version: "bias_scan_v1.1",
+    confidence_score: 0,
     mode,
     overall_bias_score: 0,
     recommendations: [],
@@ -412,6 +422,7 @@ export async function biasScan(request: BiasScanRequest): Promise<BiasScanResult
 
   // Normalize overall score
   result.overall_bias_score = Math.min(Math.round(result.overall_bias_score * 1000) / 1000, 1);
+  result.confidence_score = Math.max(0.1, Math.round((1 - result.overall_bias_score) * 1000) / 1000);
 
   // Generate recommendations
   if (result.cognitive_biases && result.cognitive_biases.length > 0) {

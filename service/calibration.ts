@@ -29,6 +29,9 @@ interface ConfidenceBand {
 }
 
 interface CalibrationResult {
+  diagnosis_id: string;
+  methodology_version: string;
+  confidence_score: number;
   calibration_score: number;
   overconfidence_index: number;
   underconfidence_index: number;
@@ -134,6 +137,10 @@ function calculateBrierScore(predictions: { confidence: number; correct: number 
 /**
  * Main calibration audit function
  */
+function generateDiagnosisId() {
+  return `cal_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export async function calibrationAudit(request: CalibrationRequest): Promise<CalibrationResult> {
   const { agent_id, sample_outputs, domain } = request;
   
@@ -246,6 +253,9 @@ export async function calibrationAudit(request: CalibrationRequest): Promise<Cal
   }
   
   return {
+    diagnosis_id: generateDiagnosisId(),
+    methodology_version: "calibration_v1.1",
+    confidence_score: Math.round(calibrationScore * 1000) / 1000,
     calibration_score: Math.round(calibrationScore * 1000) / 1000,
     overconfidence_index: Math.round(overconfidenceIndex * 1000) / 1000,
     underconfidence_index: Math.round(underconfidenceIndex * 1000) / 1000,
