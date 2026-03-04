@@ -227,6 +227,21 @@ serve({
       });
     }
 
+    // Root status page (human-friendly)
+    if (path === "/" && req.method === "GET") {
+      return new Response(JSON.stringify({
+        status: "ok",
+        service: "Mercury Cognitive Diagnostics",
+        version: "2.0",
+        docs: "/openapi.yaml",
+        health: "/health",
+        catalog: "/catalog",
+        endpoints: Object.keys(handlers),
+      }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Health check
     if (path === "/health") {
       return new Response(JSON.stringify({
