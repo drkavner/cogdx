@@ -5,11 +5,11 @@ FROM oven/bun:latest
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and bun.lockb to install dependencies
-COPY package.json bun.lockb ./
+# Copy package.json first (no lockfile required)
+COPY package.json ./
 
-# Install dependencies
-RUN bun install --production
+# Install dependencies (none currently, but keeps Dockerfile future-proof)
+RUN bun install --production --no-save
 
 # Copy the rest of the application code
 COPY . .
