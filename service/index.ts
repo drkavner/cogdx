@@ -240,21 +240,53 @@ serve({
   <title>Mercury API</title>
   <style>
     :root { color-scheme: dark; }
-    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1020; color: #e5e7eb; display: grid; place-items: center; min-height: 100vh; }
-    .card { text-align: center; padding: 28px; border: 1px solid #24304f; border-radius: 16px; background: #111833; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-    .face { font-size: 72px; line-height: 1; animation: bob 2.2s ease-in-out infinite; display: inline-block; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Mono", "SF Mono", "Fira Code", monospace;
+      background: #090f09;
+      color: #b7f7b7;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(183,247,183,0.03) 0px,
+        rgba(183,247,183,0.03) 1px,
+        transparent 2px,
+        transparent 4px
+      );
+      pointer-events: none;
+    }
+    .card {
+      text-align: center;
+      padding: 24px;
+      border: 1px solid #2e6b2e;
+      border-radius: 10px;
+      background: #0e170e;
+      box-shadow: 0 0 24px rgba(20, 90, 20, .35);
+      max-width: 560px;
+    }
+    .face { font-size: 64px; line-height: 1; animation: bob 2.2s ease-in-out infinite; display: inline-block; }
     .eyes { animation: blink 5s infinite; display:inline-block; }
-    .links { margin-top: 12px; font-size: 14px; opacity: .9; }
-    a { color: #93c5fd; text-decoration: none; margin: 0 8px; }
+    h2 { margin: 14px 0 8px; font-size: 20px; letter-spacing: .5px; }
+    p { margin: 0; opacity: .9; }
+    .links { margin-top: 12px; font-size: 14px; opacity: .92; }
+    a { color: #8fe88f; text-decoration: none; margin: 0 8px; }
+    a:hover { text-decoration: underline; }
     @keyframes blink { 0%, 46%, 50%, 100% { transform: scaleY(1);} 48% { transform: scaleY(0.08);} }
-    @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+    @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-5px);} }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="face" aria-label="animated face"><span class="eyes">(•‿•)</span></div>
-    <h2>Mercury Cognitive Diagnostics</h2>
-    <p>API is online.</p>
+    <h2>MERCURY COGNITIVE DIAGNOSTICS</h2>
+    <p>API ONLINE • RETRO MODE</p>
     <div class="links">
       <a href="/health">/health</a>
       <a href="/catalog">/catalog</a>
