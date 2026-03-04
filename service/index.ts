@@ -229,6 +229,46 @@ serve({
 
     // Root status page (human-friendly)
     if (path === "/" && req.method === "GET") {
+      const accept = req.headers.get("accept") || "";
+
+      if (accept.includes("text/html")) {
+        const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mercury API</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1020; color: #e5e7eb; display: grid; place-items: center; min-height: 100vh; }
+    .card { text-align: center; padding: 28px; border: 1px solid #24304f; border-radius: 16px; background: #111833; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .face { font-size: 72px; line-height: 1; animation: bob 2.2s ease-in-out infinite; display: inline-block; }
+    .eyes { animation: blink 5s infinite; display:inline-block; }
+    .links { margin-top: 12px; font-size: 14px; opacity: .9; }
+    a { color: #93c5fd; text-decoration: none; margin: 0 8px; }
+    @keyframes blink { 0%, 46%, 50%, 100% { transform: scaleY(1);} 48% { transform: scaleY(0.08);} }
+    @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="face" aria-label="animated face"><span class="eyes">(•‿•)</span></div>
+    <h2>Mercury Cognitive Diagnostics</h2>
+    <p>API is online.</p>
+    <div class="links">
+      <a href="/health">/health</a>
+      <a href="/catalog">/catalog</a>
+      <a href="/openapi.yaml">/openapi.yaml</a>
+    </div>
+  </div>
+</body>
+</html>`;
+
+        return new Response(html, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      }
+
       return new Response(JSON.stringify({
         status: "ok",
         service: "Mercury Cognitive Diagnostics",
