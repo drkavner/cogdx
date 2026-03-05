@@ -12,7 +12,7 @@ paths:
     post:
       operationId: auditCalibration
       summary: Assess agent confidence vs actual accuracy
-      x-cost-usd: 0.05
+      x-cost-usd: 0.06
       requestBody:
         required: true
         content:
@@ -39,7 +39,7 @@ paths:
     post:
       operationId: scanForBias
       summary: Detect systematic reasoning biases in agent output
-      x-cost-usd: 0.08
+      x-cost-usd: 0.10
       requestBody:
         required: true
         content:

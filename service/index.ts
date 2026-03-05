@@ -18,8 +18,8 @@ const X402_CONFIG = {
 };
 
 const PRICING: Record<string, { price: string; priceNum: number; maxAge: number }> = {
-  "/calibration_audit": { price: "$0.05", priceNum: 0.05, maxAge: 3600 },
-  "/bias_scan": { price: "$0.08", priceNum: 0.08, maxAge: 3600 },
+  "/calibration_audit": { price: "$0.06", priceNum: 0.06, maxAge: 3600 },
+  "/bias_scan": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/reasoning_trace_analysis": { price: "$0.03", priceNum: 0.03, maxAge: 3600 },
   "/prompt_optimization": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/failure_mode_predict": { price: "$0.15", priceNum: 0.15, maxAge: 3600 },

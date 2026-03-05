@@ -13,7 +13,7 @@
         "id": "calibration_audit",
         "path": "/calibration_audit",
         "method": "POST",
-        "cost_per_call": 0.05,
+        "cost_per_call": 0.06,
         "currency": "USDC",
         "description": "Assess agent confidence vs actual accuracy",
         "status": "live"
@@ -22,7 +22,7 @@
         "id": "bias_scan",
         "path": "/bias_scan",
         "method": "POST",
-        "cost_per_call": 0.08,
+        "cost_per_call": 0.10,
         "currency": "USDC",
         "description": "Detect systematic reasoning biases",
         "status": "beta"
