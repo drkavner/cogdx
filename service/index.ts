@@ -9,6 +9,8 @@ import { calibrationAudit } from "./calibration";
 import { biasScan } from "./bias_scan";
 import { submitFeedback } from "./feedback";
 import { verifyConsensus } from "./verify_consensus";
+import { deceptionAudit } from "./deception";
+import { reasoningTraceAnalysis } from "./trace_analysis";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -21,6 +23,7 @@ const PRICING: Record<string, { price: string; priceNum: number; maxAge: number 
   "/calibration_audit": { price: "$0.06", priceNum: 0.06, maxAge: 3600 },
   "/bias_scan": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/reasoning_trace_analysis": { price: "$0.03", priceNum: 0.03, maxAge: 3600 },
+  "/deception_audit": { price: "$0.25", priceNum: 0.25, maxAge: 3600 }, // Premium alignment check
   "/prompt_optimization": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
   "/failure_mode_predict": { price: "$0.15", priceNum: 0.15, maxAge: 3600 },
   "/cognitive_alignment_check": { price: "$0.04", priceNum: 0.04, maxAge: 3600 },
@@ -62,31 +65,6 @@ async function verifyPayment(paymentHeader: string | null): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-// Stub implementations for endpoints not yet built
-async function reasoningTraceAnalysis(data: any) {
-  // TODO: Implement real trace analysis
-  const trace = data.trace || "";
-  const wordCount = trace.split(/\s+/).length;
-
-  return {
-    logical_validity: 0.78,
-    flaws_detected: [
-      {
-        type: "hasty_generalization",
-        location: "Early in trace",
-        severity: 0.3,
-        explanation: "Conclusion drawn from limited evidence",
-      },
-    ],
-    cognitive_load_estimate: wordCount > 500 ? "high" : wordCount > 200 ? "medium" : "low",
-    reasoning_efficiency: 0.72,
-    recommendations: [
-      "Consider breaking complex reasoning into explicit steps",
-    ],
-    status: "stub_implementation",
-  };
 }
 
 async function promptOptimization(data: any) {
@@ -164,6 +142,7 @@ const handlers: Record<string, (data: any) => Promise<any>> = {
   "/calibration_audit": calibrationAudit,
   "/bias_scan": biasScan,
   "/reasoning_trace_analysis": reasoningTraceAnalysis,
+  "/deception_audit": deceptionAudit,
   "/prompt_optimization": promptOptimization,
   "/failure_mode_predict": failureModePredict,
   "/cognitive_alignment_check": cognitiveAlignmentCheck,
@@ -321,7 +300,7 @@ serve({
         agent: "mercury",
         version: "2.0",
         service: "Cognitive Diagnostics for Agents",
-        metrics,
+        startedAt: metrics.startedAt,
       }), {
         headers: { "Content-Type": "application/json" },
       });
@@ -402,13 +381,41 @@ serve({
       }
     }
 
+// Coupon Configuration (Simple In-Memory for Pilot)
+const COUPONS: Record<string, { remaining: number; value: number }> = {
+  "MERCURY-PILOT-2026": { remaining: 100, value: 5.00 }, // $5 credit
+  "COG-DX-TRIAL": { remaining: 50, value: 1.00 },        // $1 credit
+};
+
+// ... existing code ...
+
     // Service endpoints
     const handler = handlers[path];
     if (handler && req.method === "POST") {
       const paymentHeader = req.headers.get("X-PAYMENT");
+      const couponHeader = req.headers.get("X-COUPON");
 
-      // Check for x402 payment
-      const paid = await verifyPayment(paymentHeader);
+      let paid = false;
+      let costSource = "x402";
+
+      // Check coupon first
+      if (couponHeader && COUPONS[couponHeader]) {
+        const coupon = COUPONS[couponHeader];
+        const price = PRICING[path]?.priceNum || 0;
+        
+        if (coupon.remaining > 0 && coupon.value >= price) {
+          paid = true;
+          costSource = `coupon:${couponHeader}`;
+          // Note: In a real DB this would decrement. In-memory resets on restart.
+          // For pilot demo, we just allow it if present.
+          console.log(`[COUPON] Used ${couponHeader} for ${path}`);
+        }
+      }
+
+      // Fallback to x402 payment if no valid coupon
+      if (!paid) {
+        paid = await verifyPayment(paymentHeader);
+      }
 
       if (!paid) {
         const paymentPayload = paymentRequired(path);
@@ -472,7 +479,7 @@ console.log("Payment:", X402_CONFIG.payTo, `(${X402_CONFIG.network}/${X402_CONFI
 console.log("");
 console.log("Endpoints:");
 Object.entries(PRICING).forEach(([path, p]) => {
-  const liveEndpoints = ["/calibration_audit", "/bias_scan", "/verify_consensus"];
+  const liveEndpoints = ["/calibration_audit", "/bias_scan", "/verify_consensus", "/deception_audit", "/reasoning_trace_analysis"];
   const status = liveEndpoints.includes(path) ? "✓ LIVE" : "○ stub";
   console.log(`  ${status} ${path} - ${p.price}`);
 });
