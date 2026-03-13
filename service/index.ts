@@ -381,41 +381,13 @@ serve({
       }
     }
 
-// Coupon Configuration (Simple In-Memory for Pilot)
-const COUPONS: Record<string, { remaining: number; value: number }> = {
-  "MERCURY-PILOT-2026": { remaining: 100, value: 5.00 }, // $5 credit
-  "COG-DX-TRIAL": { remaining: 50, value: 1.00 },        // $1 credit
-};
-
-// ... existing code ...
-
     // Service endpoints
     const handler = handlers[path];
     if (handler && req.method === "POST") {
       const paymentHeader = req.headers.get("X-PAYMENT");
-      const couponHeader = req.headers.get("X-COUPON");
 
-      let paid = false;
-      let costSource = "x402";
-
-      // Check coupon first
-      if (couponHeader && COUPONS[couponHeader]) {
-        const coupon = COUPONS[couponHeader];
-        const price = PRICING[path]?.priceNum || 0;
-        
-        if (coupon.remaining > 0 && coupon.value >= price) {
-          paid = true;
-          costSource = `coupon:${couponHeader}`;
-          // Note: In a real DB this would decrement. In-memory resets on restart.
-          // For pilot demo, we just allow it if present.
-          console.log(`[COUPON] Used ${couponHeader} for ${path}`);
-        }
-      }
-
-      // Fallback to x402 payment if no valid coupon
-      if (!paid) {
-        paid = await verifyPayment(paymentHeader);
-      }
+      // Check for x402 payment
+      const paid = await verifyPayment(paymentHeader);
 
       if (!paid) {
         const paymentPayload = paymentRequired(path);
