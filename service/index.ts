@@ -7,10 +7,11 @@
 import { serve } from "bun";
 import { calibrationAudit } from "./calibration";
 import { biasScan } from "./bias_scan";
-import { submitFeedback } from "./feedback";
+import { submitFeedback, getCreditsInfo } from "./feedback";
 import { verifyConsensus } from "./verify_consensus";
 import { deceptionAudit } from "./deception";
 import { reasoningTraceAnalysis } from "./trace_analysis";
+import { getBalance, deductCredits } from "./credits";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -387,28 +388,73 @@ serve({
       }
     }
 
+    // Credits balance endpoint (FREE)
+    if (path === "/credits" && req.method === "GET") {
+      const wallet = url.searchParams.get("wallet");
+      if (!wallet) {
+        return new Response(JSON.stringify({ 
+          error: "Missing wallet parameter",
+          usage: "GET /credits?wallet=0x...",
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      try {
+        const info = await getCreditsInfo(wallet);
+        return new Response(JSON.stringify({
+          ...info,
+          how_to_earn: "Submit feedback with your wallet address to earn credits",
+          how_to_use: "Include X-WALLET header in API calls to pay with credits",
+        }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (e: any) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Service endpoints
     const handler = handlers[path];
     if (handler && req.method === "POST") {
       const paymentHeader = req.headers.get("X-PAYMENT");
       const couponHeader = req.headers.get("X-COUPON");
+      const walletHeader = req.headers.get("X-WALLET");
 
       let paid = false;
+      let paymentMethod = "";
 
-      // Check coupon first (pilot credits)
+      // 1. Check coupon first (pilot credits)
       if (couponHeader && COUPONS[couponHeader]) {
         const coupon = COUPONS[couponHeader];
         const price = PRICING[path]?.priceNum || 0;
         
         if (coupon.remaining > 0 && coupon.value >= price) {
           paid = true;
+          paymentMethod = `coupon:${couponHeader}`;
           console.log(`[COUPON] Used ${couponHeader} for ${path}`);
         }
       }
 
-      // Fallback to x402 payment if no valid coupon
+      // 2. Check wallet credits (earned from feedback)
+      if (!paid && walletHeader) {
+        const price = PRICING[path]?.priceNum || 0;
+        const hasCredits = await deductCredits(walletHeader, price, path);
+        if (hasCredits) {
+          paid = true;
+          paymentMethod = `credits:${walletHeader}`;
+          console.log(`[CREDITS] Deducted $${price} from ${walletHeader} for ${path}`);
+        }
+      }
+
+      // 3. Fallback to x402 payment
       if (!paid) {
         paid = await verifyPayment(paymentHeader);
+        if (paid) paymentMethod = "x402";
       }
 
       if (!paid) {

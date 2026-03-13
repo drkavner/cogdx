@@ -1,10 +1,12 @@
 /**
  * Feedback Service
  * Collects accuracy feedback on diagnoses to improve detection over time
+ * Awards credits to wallets for valuable feedback
  */
 
 import { appendFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { addCredits, calculateFeedbackCredits, getBalance, CREDIT_REWARDS } from "./credits";
 
 interface FeedbackRequest {
   diagnosis_id?: string;
@@ -13,11 +15,13 @@ interface FeedbackRequest {
   severity_correct?: boolean | null;
   comments?: string;
   agent_id: string;
+  wallet?: string;  // Optional: earn credits to this wallet
 }
 
 interface FeedbackRecord extends FeedbackRequest {
   feedback_id: string;
   timestamp: string;
+  credits_awarded?: number;
 }
 
 interface FeedbackResponse {
@@ -25,6 +29,11 @@ interface FeedbackResponse {
   feedback_id: string;
   message: string;
   records_count?: number;
+  credits?: {
+    awarded: number;
+    new_balance: number;
+    wallet: string;
+  };
 }
 
 // Use persistent data directory (mounted volume in production)
@@ -44,6 +53,11 @@ function generateId(): string {
   return `fb_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 }
 
+function isValidWallet(wallet: string): boolean {
+  // Basic Ethereum address validation
+  return /^0x[a-fA-F0-9]{40}$/.test(wallet);
+}
+
 export async function submitFeedback(request: FeedbackRequest): Promise<FeedbackResponse> {
   if (!request.agent_id) {
     throw new Error("agent_id is required");
@@ -58,10 +72,31 @@ export async function submitFeedback(request: FeedbackRequest): Promise<Feedback
   }
 
   const feedback_id = generateId();
+  let creditsAwarded = 0;
+  let walletBalance = 0;
+  
+  // Calculate and award credits if wallet provided
+  if (request.wallet) {
+    if (!isValidWallet(request.wallet)) {
+      throw new Error("Invalid wallet address. Must be a valid Ethereum address (0x...)");
+    }
+    
+    const hasComments = !!(request.comments && request.comments.length > 10);
+    creditsAwarded = calculateFeedbackCredits(request.accurate, hasComments);
+    
+    await addCredits(request.wallet, creditsAwarded, 
+      `feedback:${request.endpoint}:${request.accurate ? "accurate" : "inaccurate"}`,
+      feedback_id
+    );
+    
+    const balance = await getBalance(request.wallet);
+    walletBalance = balance.balance;
+  }
   
   const record: FeedbackRecord = {
     feedback_id,
     timestamp: new Date().toISOString(),
+    credits_awarded: creditsAwarded > 0 ? creditsAwarded : undefined,
     ...request,
   };
 
@@ -80,10 +115,40 @@ export async function submitFeedback(request: FeedbackRequest): Promise<Feedback
     // File might not exist yet
   }
 
-  return {
+  const response: FeedbackResponse = {
     received: true,
     feedback_id,
     records_count: recordsCount,
-    message: `Thank you for the feedback. This helps improve detection accuracy. (Total feedback records: ${recordsCount})`,
+    message: request.wallet 
+      ? `Feedback received. Awarded $${creditsAwarded.toFixed(4)} to ${request.wallet}. New balance: $${walletBalance.toFixed(4)}`
+      : `Feedback received. Tip: Include a wallet address to earn credits for future API calls.`,
+  };
+  
+  if (request.wallet) {
+    response.credits = {
+      awarded: creditsAwarded,
+      new_balance: walletBalance,
+      wallet: request.wallet.toLowerCase(),
+    };
+  }
+
+  return response;
+}
+
+// Export credit info endpoint
+export async function getCreditsInfo(wallet: string): Promise<{
+  wallet: string;
+  balance: number;
+  transactions: number;
+  rewards: typeof CREDIT_REWARDS;
+}> {
+  if (!isValidWallet(wallet)) {
+    throw new Error("Invalid wallet address");
+  }
+  
+  const balance = await getBalance(wallet);
+  return {
+    ...balance,
+    rewards: CREDIT_REWARDS,
   };
 }
