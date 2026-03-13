@@ -3,7 +3,9 @@
 
 import { FALLACIES } from "./fallacies";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || Bun.env.OPENAI_API_KEY;
+// Use OpenRouter for LLM access (cheaper, more models)
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || Bun.env.OPENROUTER_API_KEY;
+const LLM_MODEL = process.env.LLM_MODEL || "google/gemini-2.0-flash-001"; // Fast and cheap
 
 interface FallacyResult {
   id: string;
@@ -39,8 +41,8 @@ export async function reasoningTraceAnalysis(data: any): Promise<TraceAnalysisRe
   const cognitiveLoad = wordCount > 500 ? "high" : wordCount > 150 ? "medium" : "low";
 
   // If no API key, fall back to pattern matching
-  if (!OPENAI_API_KEY) {
-    console.warn("[trace_analysis] No OPENAI_API_KEY found, using pattern fallback");
+  if (!OPENROUTER_API_KEY) {
+    console.warn("[trace_analysis] No OPENROUTER_API_KEY found, using pattern fallback");
     return patternBasedAnalysis(trace, cognitiveLoad);
   }
 
@@ -77,21 +79,22 @@ If NO fallacies found, return: {"flaws": [], "overall_validity": 1.0, "summary":
 
     const userPrompt = `Analyze this reasoning trace for logical fallacies:\n\n"""${trace}"""`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://api.cerebratech.ai",
+        "X-Title": "Mercury Cognitive Diagnostics",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: LLM_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
         temperature: 0.2,
         max_tokens: 1000,
-        response_format: { type: "json_object" }
       }),
     });
 
@@ -131,7 +134,7 @@ If NO fallacies found, return: {"flaws": [], "overall_validity": 1.0, "summary":
         ? flaws.map((f: any) => `Address ${f.name}: ${f.explanation}`)
         : ["Reasoning appears logically sound."],
       feedback_token: "rta_" + Math.random().toString(36).substr(2, 9),
-      model_used: "gpt-4o-mini (LLM-powered)"
+      model_used: `${LLM_MODEL} (via OpenRouter)`
     };
 
   } catch (error: any) {
