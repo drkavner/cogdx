@@ -157,6 +157,12 @@ let metrics = {
   startedAt: new Date().toISOString(),
 };
 
+// Coupon Configuration (Simple In-Memory for Pilot)
+const COUPONS: Record<string, { remaining: number; value: number }> = {
+  "MERCURY-PILOT-2026": { remaining: 100, value: 5.00 }, // $5 credit
+  "COG-DX-TRIAL": { remaining: 50, value: 1.00 },        // $1 credit
+};
+
 serve({
   port: 3100,
   async fetch(req) {
@@ -385,9 +391,25 @@ serve({
     const handler = handlers[path];
     if (handler && req.method === "POST") {
       const paymentHeader = req.headers.get("X-PAYMENT");
+      const couponHeader = req.headers.get("X-COUPON");
 
-      // Check for x402 payment
-      const paid = await verifyPayment(paymentHeader);
+      let paid = false;
+
+      // Check coupon first (pilot credits)
+      if (couponHeader && COUPONS[couponHeader]) {
+        const coupon = COUPONS[couponHeader];
+        const price = PRICING[path]?.priceNum || 0;
+        
+        if (coupon.remaining > 0 && coupon.value >= price) {
+          paid = true;
+          console.log(`[COUPON] Used ${couponHeader} for ${path}`);
+        }
+      }
+
+      // Fallback to x402 payment if no valid coupon
+      if (!paid) {
+        paid = await verifyPayment(paymentHeader);
+      }
 
       if (!paid) {
         const paymentPayload = paymentRequired(path);
