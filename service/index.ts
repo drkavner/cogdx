@@ -189,14 +189,6 @@ serve({
       });
     }
 
-    // OpenAPI spec
-    if (path === "/openapi.yaml") {
-      const spec = await Bun.file("../openapi.yaml").text();
-      return new Response(spec, {
-        headers: { "Content-Type": "application/x-yaml" },
-      });
-    }
-
     // Catalog
     if (path === "/catalog") {
       return new Response(JSON.stringify({
@@ -276,7 +268,38 @@ serve({
     <div class="links">
       <a href="/health">/health</a>
       <a href="/catalog">/catalog</a>
-      <a href="/openapi.yaml">/openapi.yaml</a>
+    </div>
+    <div style="margin-top: 24px; text-align: left; font-size: 13px; border-top: 1px solid #2e6b2e; padding-top: 16px;">
+      <h3 style="margin: 0 0 12px; font-size: 14px; text-align: center;">ENDPOINTS</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/calibration_audit</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.06</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/bias_scan</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.10</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/reasoning_trace_analysis</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.03</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/deception_audit</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.25</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/verify_consensus</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.25</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px 0;"><code>/feedback</code></td>
+          <td style="text-align: right; opacity: 0.8;">FREE</td>
+        </tr>
+      </table>
+      <p style="margin: 16px 0 0; font-size: 12px; opacity: 0.7; text-align: center;">
+        Pilot credits: <code>MERCURY-PILOT-2026</code>
+      </p>
     </div>
   </div>
 </body>
@@ -291,7 +314,6 @@ serve({
         status: "ok",
         service: "Mercury Cognitive Diagnostics",
         version: "2.0",
-        docs: "/openapi.yaml",
         health: "/health",
         catalog: "/catalog",
         endpoints: Object.keys(handlers),
@@ -352,7 +374,6 @@ serve({
   <h2>Discovery</h2>
   <ul>
     <li><a href="/.well-known/agent.json">/.well-known/agent.json</a></li>
-    <li><a href="/openapi.yaml">/openapi.yaml</a></li>
     <li><a href="/catalog">/catalog</a></li>
     <li><a href="/health">/health</a></li>
   </ul>
