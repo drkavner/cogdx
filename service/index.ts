@@ -297,9 +297,7 @@ serve({
           <td style="text-align: right; opacity: 0.8;">FREE</td>
         </tr>
       </table>
-      <p style="margin: 16px 0 0; font-size: 12px; opacity: 0.7; text-align: center;">
-        Pilot credits: <code>MERCURY-PILOT-2026</code>
-      </p>
+
     </div>
   </div>
 </body>
