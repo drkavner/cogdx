@@ -12,6 +12,7 @@ import { verifyConsensus } from "./verify_consensus";
 import { deceptionAudit } from "./deception";
 import { reasoningTraceAnalysis } from "./trace_analysis";
 import { getBalance, deductCredits } from "./credits";
+import { preTradeAudit } from "./pre_trade_audit";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -29,6 +30,7 @@ const PRICING: Record<string, { price: string; priceNum: number; maxAge: number 
   "/failure_mode_predict": { price: "$0.15", priceNum: 0.15, maxAge: 3600 },
   "/cognitive_alignment_check": { price: "$0.04", priceNum: 0.04, maxAge: 3600 },
   "/verify_consensus": { price: "$0.25", priceNum: 0.25, maxAge: 3600 }, // Standard depth default
+  "/pre_trade_audit": { price: "$0.15", priceNum: 0.15, maxAge: 3600 }, // Trading decision checklist
 };
 
 // Generate x402 PaymentRequired response
@@ -147,7 +149,8 @@ const handlers: Record<string, (data: any) => Promise<any>> = {
   "/prompt_optimization": promptOptimization,
   "/failure_mode_predict": failureModePredict,
   "/cognitive_alignment_check": cognitiveAlignmentCheck,
-  "/verify_consensus": verifyConsensus, // Consensus verification oracle
+  "/verify_consensus": verifyConsensus,
+  "/pre_trade_audit": preTradeAudit, // Trading decision cognitive checklist
 };
 
 // Metrics tracking
@@ -291,6 +294,10 @@ serve({
         <tr style="border-bottom: 1px solid #1e4e1e;">
           <td style="padding: 6px 0;"><code>/verify_consensus</code></td>
           <td style="text-align: right; opacity: 0.8;">$0.25</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #1e4e1e;">
+          <td style="padding: 6px 0;"><code>/pre_trade_audit</code></td>
+          <td style="text-align: right; opacity: 0.8;">$0.15</td>
         </tr>
         <tr>
           <td style="padding: 6px 0;"><code>/feedback</code></td>
