@@ -10,12 +10,17 @@ import { addCredits, calculateFeedbackCredits, getBalance, CREDIT_REWARDS } from
 
 interface FeedbackRequest {
   diagnosis_id?: string;
-  endpoint: "/bias_scan" | "/calibration_audit" | "/reasoning_trace_analysis" | "/deception_audit" | "/verify_consensus";
+  feedback_id?: string;  // For pre_trade_audit outcome tracking
+  endpoint: "/bias_scan" | "/calibration_audit" | "/reasoning_trace_analysis" | "/deception_audit" | "/verify_consensus" | "/pre_trade_audit";
   accurate: boolean;
   severity_correct?: boolean | null;
   comments?: string;
   agent_id: string;
   wallet?: string;  // Optional: earn credits to this wallet
+  // Pre-trade audit specific fields
+  trade_outcome?: "win" | "loss" | "breakeven";
+  pnl_percent?: number;  // Profit/loss percentage
+  followed_recommendation?: boolean;
 }
 
 interface FeedbackRecord extends FeedbackRequest {
