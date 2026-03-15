@@ -21,6 +21,30 @@ const X402_CONFIG = {
   currency: "USDC",
 };
 
+// Discord Alert Configuration
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "";
+
+// Send payment alert to Discord
+async function sendPaymentAlert(path: string, paymentMethod: string, price: string) {
+  if (!DISCORD_WEBHOOK_URL) return;
+  
+  try {
+    const emoji = paymentMethod.startsWith("x402") ? "🎉" : paymentMethod.startsWith("credits") ? "💳" : "🎫";
+    const message = {
+      content: `${emoji} **PAID API CALL!**\n\n**Endpoint:** \`${path}\`\n**Price:** ${price}\n**Method:** ${paymentMethod}\n**Time:** ${new Date().toISOString()}\n\n402 → 200 🔥`,
+    };
+    
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(message),
+    });
+    console.log(`[ALERT] Discord notification sent for ${path}`);
+  } catch (e) {
+    console.error("[ALERT] Failed to send Discord notification:", e);
+  }
+}
+
 const PRICING: Record<string, { price: string; priceNum: number; maxAge: number }> = {
   "/calibration_audit": { price: "$0.06", priceNum: 0.06, maxAge: 3600 },
   "/bias_scan": { price: "$0.10", priceNum: 0.10, maxAge: 3600 },
@@ -481,6 +505,11 @@ serve({
       if (!paid) {
         paid = await verifyPayment(paymentHeader);
         if (paid) paymentMethod = "x402";
+      }
+
+      // Send Discord alert for paid calls
+      if (paid && paymentMethod) {
+        sendPaymentAlert(path, paymentMethod, PRICING[path]?.price || "$0");
       }
 
       if (!paid) {
