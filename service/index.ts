@@ -13,6 +13,7 @@ import { deceptionAudit } from "./deception";
 import { reasoningTraceAnalysis } from "./trace_analysis";
 import { getBalance, deductCredits } from "./credits";
 import { preTradeAudit } from "./pre_trade_audit";
+import { checkRateLimit, recordUsage } from "./ratelimit";
 
 // x402 Configuration
 const X402_CONFIG = {
@@ -512,6 +513,21 @@ serve({
         sendPaymentAlert(path, paymentMethod, PRICING[path]?.price || "$0");
       }
 
+      // Check rate limits (safety cap for free-tier abuse)
+      const rateLimitWallet = walletHeader || "anonymous";
+      const rateCheck = checkRateLimit(rateLimitWallet);
+      if (!rateCheck.allowed) {
+        return new Response(JSON.stringify({
+          error: "Rate limit exceeded",
+          message: rateCheck.reason,
+          service: "Mercury Cognitive Diagnostics",
+          endpoint: path,
+        }), {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       if (!paid) {
         const paymentPayload = paymentRequired(path);
         return new Response(JSON.stringify({ 
@@ -536,6 +552,9 @@ serve({
         metrics.calls++;
         metrics.byEndpoint[path] = (metrics.byEndpoint[path] || 0) + 1;
         metrics.revenue += PRICING[path]?.priceNum || 0;
+
+        // Record rate limit usage
+        recordUsage(rateLimitWallet);
 
         return new Response(JSON.stringify(result), {
           headers: {
