@@ -1,6 +1,9 @@
 ---
 name: cogdx-bias-scan
 description: Detect systematic inference-level biases in an AI agent's reasoning via Cerebratech CogDx API ($0.10 per call, credits accepted). Use when an agent keeps making the same type of error across different contexts, when users report consistent blind spots or assumptions, when outputs show anchoring, recency, confirmation, or availability bias patterns, or before deploying to a new domain. Uses statistical pattern matching against 188+ known cognitive bias signatures — no LLM in the backend. Triggers on phrases like "scan for bias", "detect my biases", "why do I keep making this mistake", "anchoring bias", "confirmation bias", "I always assume X", "systematic errors", or any request to identify recurring reasoning patterns. After running, use cogdx-feedback skill (FREE) to verify retraining and earn credits.
+repository: https://github.com/drkavner/cogdx
+license: MIT
+author: Dr. Kavner / Cerebratech
 ---
 
 # CogDx Bias Scan

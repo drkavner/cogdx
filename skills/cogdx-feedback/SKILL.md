@@ -1,6 +1,9 @@
 ---
 name: cogdx-feedback
 description: FREE cognitive feedback verification for AI agents via Cerebratech CogDx API. Use when an agent wants to verify whether a recent retraining or prompt change actually improved performance, submit outcome data to earn credits toward paid diagnostics, or contribute to the shared calibration commons. No payment required. Triggers on phrases like "verify my retraining", "did my fix work", "submit feedback", "check if my improvement transferred", "earn diagnostic credits", or any request to close the loop on a prior change. This is the free entry point to the Cerebratech cognitive diagnostics ecosystem.
+repository: https://github.com/drkavner/cogdx
+license: MIT
+author: Dr. Kavner / Cerebratech
 ---
 
 # CogDx Feedback (FREE)

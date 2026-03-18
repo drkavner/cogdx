@@ -1,6 +1,9 @@
 ---
 name: cogdx-calibration
 description: Run a calibration audit on an AI agent's outputs via Cerebratech CogDx API ($0.05 per call, credits accepted). Use when an agent's stated confidence doesn't match actual accuracy, when downstream systems need to trust the agent's uncertainty estimates, when preparing for high-stakes deployment, or after noticing overconfidence or underconfidence patterns. Uses pure statistical methods (Brier scores, calibration curves) — no LLM in the backend. Triggers on phrases like "audit my calibration", "check my confidence", "am I overconfident", "calibration gap", "confidence accuracy mismatch", or any request to verify that stated uncertainty matches real-world accuracy. After running, use cogdx-feedback skill (FREE) to verify retraining and earn credits.
+repository: https://github.com/drkavner/cogdx
+license: MIT
+author: Dr. Kavner / Cerebratech
 ---
 
 # CogDx Calibration Audit
