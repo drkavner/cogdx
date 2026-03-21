@@ -13,6 +13,7 @@ import { verifyConsensus } from "./verify_consensus";
 import { deceptionAudit } from "./deception";
 import { reasoningTraceAnalysis } from "./trace_analysis";
 import { healthCheck } from "./health";
+import { log, logApiCall, logError, logAlert, logPaymentFailure } from "./logger";
 import { getBalance, deductCredits } from "./credits";
 import { preTradeAudit } from "./pre_trade_audit";
 import { checkRateLimit, recordUsage } from "./ratelimit";
@@ -883,6 +884,11 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
 
       // Send alerts for paid calls (Discord + Telegram)
       if (paid && paymentMethod) {
+        await logAlert("Payment Alert Sent", {
+          endpoint: path,
+          payment_method: paymentMethod,
+          price: PRICING[path]?.price,
+        });
         sendPaymentAlert(path, paymentMethod, PRICING[path]?.price || "$0");
         sendTelegramAlert(path, paymentMethod, PRICING[path]?.price || "$0");
       }
@@ -903,6 +909,13 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
       }
 
       if (!paid) {
+        // LOG: Payment rejection
+        await logPaymentFailure(
+          req.headers.get("X-AGENT-ID") || "unknown",
+          path,
+          "No valid payment method provided"
+        );
+
         const paymentPayload = paymentRequired(path);
         return new Response(JSON.stringify({ 
           error: "Payment required",
@@ -919,8 +932,10 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
       }
 
       try {
+        const startTime = Date.now();
         const body = await req.json();
         const result = await handler(body);
+        const responseTime = Date.now() - startTime;
 
         // SECURITY: Record diagnosis for feedback validation
         const diagnosis_id = await recordDiagnosis(
@@ -941,6 +956,16 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         // Record rate limit usage
         recordUsage(rateLimitWallet);
 
+        // LOG: Successful API call
+        await logApiCall(
+          path,
+          body.agent_id || "unknown",
+          paymentMethod,
+          PRICING[path]?.priceNum || 0,
+          200,
+          responseTime
+        );
+
         return new Response(JSON.stringify(result), {
           headers: {
             "Content-Type": "application/json",
@@ -950,6 +975,12 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
           },
         });
       } catch (e: any) {
+        // LOG: Error
+        await logError(`Handler error on ${path}`, e, {
+          agent_id: body?.agent_id || "unknown",
+          endpoint: path,
+        });
+
         return new Response(JSON.stringify({ 
           error: "Request failed",
           message: e.message,
