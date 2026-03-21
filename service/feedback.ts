@@ -145,8 +145,7 @@ export async function submitFeedback(request: FeedbackRequest): Promise<Feedback
       feedback_id
     );
     
-    const balance = await getBalance(request.wallet);
-    walletBalance = balance.balance;
+    walletBalance = projectedBalance; // Use already-calculated projected balance
   }
   
   const record: FeedbackRecord = {
