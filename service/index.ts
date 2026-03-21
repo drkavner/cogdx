@@ -229,7 +229,7 @@ startCrashMonitor(() => ({
   startedAt: metrics.startedAt,
 }));
 
-serve({
+serve({ hostname: '0.0.0.0',
   port: 3100,
   async fetch(req) {
     const url = new URL(req.url);
