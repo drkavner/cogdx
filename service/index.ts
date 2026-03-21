@@ -14,6 +14,7 @@ import { deceptionAudit } from "./deception";
 import { reasoningTraceAnalysis } from "./trace_analysis";
 import { healthCheck } from "./health";
 import { log, logApiCall, logError, logAlert, logPaymentFailure } from "./logger";
+import { startCrashMonitor } from "./crash-monitor";
 import { getBalance, deductCredits } from "./credits";
 import { preTradeAudit } from "./pre_trade_audit";
 import { checkRateLimit, recordUsage } from "./ratelimit";
@@ -219,6 +220,14 @@ const COUPONS: Record<string, { remaining: number; value: number }> = {
   "MERCURY-PILOT-2026": { remaining: 100, value: 5.00 }, // $5 credit
   "COG-DX-TRIAL": { remaining: 50, value: 1.00 },        // $1 credit
 };
+
+// Start crash monitoring with metrics callback
+startCrashMonitor(() => ({
+  calls: metrics.calls,
+  errors: metrics.errors || 0,
+  revenue: metrics.revenue,
+  startedAt: metrics.startedAt,
+}));
 
 serve({
   port: 3100,
@@ -711,6 +720,43 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         version: "2.0",
         service: "Cognitive Diagnostics for Agents",
         startedAt: metrics.startedAt,
+        calls: metrics.calls,
+        revenue: metrics.revenue,
+        errors: (metrics.errors || 0),
+      }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Analytics Dashboard
+    if (path === "/dashboard") {
+      const dashboardHTML = await Bun.file(import.meta.dir + "/dashboard.html").text();
+      return new Response(dashboardHTML, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+
+    // Analytics API - Logs
+    if (path === "/api/analytics/logs" && req.method === "GET") {
+      const limit = parseInt(new URL(req.url).searchParams.get("limit") || "100");
+      // TODO: Read from cogdx.log and health.jsonl
+      return new Response(JSON.stringify({
+        all: [],
+        calls: [],
+        errors: [],
+      }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Analytics API - Metrics
+    if (path === "/api/analytics/metrics" && req.method === "GET") {
+      return new Response(JSON.stringify({
+        total_calls: metrics.calls,
+        total_revenue: metrics.revenue,
+        by_endpoint: metrics.byEndpoint,
+        started_at: metrics.startedAt,
+        uptime_ms: Date.now() - new Date(metrics.startedAt).getTime(),
       }), {
         headers: { "Content-Type": "application/json" },
       });
