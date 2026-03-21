@@ -6,6 +6,7 @@
 
 import { serve } from "bun";
 import { calibrationAudit } from "./calibration";
+import { recordDiagnosis, getDiagnosis, getTotalPaidByAgent, getTotalPaidByWallet } from "./diagnosis-ledger";
 import { biasScan } from "./bias_scan";
 import { submitFeedback, getCreditsInfo } from "./feedback";
 import { verifyConsensus } from "./verify_consensus";
@@ -894,6 +895,17 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
       try {
         const body = await req.json();
         const result = await handler(body);
+
+        // SECURITY: Record diagnosis for feedback validation
+        const diagnosis_id = await recordDiagnosis(
+          body.agent_id || "unknown",
+          path,
+          PRICING[path]?.priceNum || 0,
+          paymentMethod,
+          walletHeader
+        );
+        result.diagnosis_id = diagnosis_id;
+        result.feedback_instruction = `To submit feedback, call POST /feedback with: {"diagnosis_id": "${diagnosis_id}", "endpoint": "${path}", "accurate": true/false, ...}`;
 
         // Track metrics
         metrics.calls++;

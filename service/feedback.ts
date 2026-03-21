@@ -7,6 +7,7 @@
 import { appendFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { addCredits, calculateFeedbackCredits, getBalance, CREDIT_REWARDS } from "./credits";
+import { getDiagnosis, getTotalPaidByAgent, getTotalPaidByWallet, markFeedbackSubmitted } from "./diagnosis-ledger";
 
 interface FeedbackRequest {
   diagnosis_id?: string;
@@ -76,6 +77,26 @@ export async function submitFeedback(request: FeedbackRequest): Promise<Feedback
     throw new Error("accurate (boolean) is required");
   }
 
+  // SECURITY: Validate diagnosis_id exists and was paid for
+  if (!request.diagnosis_id) {
+    throw new Error("diagnosis_id is required. You must reference a paid API call to submit feedback.");
+  }
+
+  const diagnosis = await getDiagnosis(request.diagnosis_id);
+  if (!diagnosis) {
+    throw new Error("Diagnosis not found. Invalid diagnosis_id or diagnosis expired.");
+  }
+
+  // SECURITY: Verify agent_id matches the diagnosis
+  if (diagnosis.agent_id !== request.agent_id) {
+    throw new Error("Agent mismatch: diagnosis_id was created by a different agent.");
+  }
+
+  // SECURITY: Verify endpoint matches
+  if (diagnosis.endpoint !== request.endpoint) {
+    throw new Error(`Endpoint mismatch: diagnosis was for ${diagnosis.endpoint}, not ${request.endpoint}`);
+  }
+
   const feedback_id = generateId();
   let creditsAwarded = 0;
   let walletBalance = 0;
@@ -85,9 +106,39 @@ export async function submitFeedback(request: FeedbackRequest): Promise<Feedback
     if (!isValidWallet(request.wallet)) {
       throw new Error("Invalid wallet address. Must be a valid Ethereum address (0x...)");
     }
-    
+
+    // SECURITY: Can only earn credits if diagnosis was paid for (not via coupon)
+    if (diagnosis.payment_method && diagnosis.payment_method.startsWith("coupon")) {
+      throw new Error(
+        "Cannot earn credits from feedback on coupon-based diagnoses. " +
+        "You can only earn credits from diagnoses you paid for with real funds (x402 or wallet credits)."
+      );
+    }
+
+    // SECURITY: Agent cannot earn more credits than they've paid in via real payments
+    const totalPaidRealMoney = await getTotalPaidByWallet(request.wallet, true); // true = exclude coupons
     const hasComments = !!(request.comments && request.comments.length > 10);
     creditsAwarded = calculateFeedbackCredits(request.accurate, hasComments);
+
+    // Check: new credits + existing balance <= total paid (via real money)
+    const { balance } = await getBalance(request.wallet);
+    const projectedBalance = balance + creditsAwarded;
+
+    if (totalPaidRealMoney === 0) {
+      throw new Error(
+        "You must pay for at least one diagnosis with real funds (x402 USDC) " +
+        "before you can earn credits from feedback. Coupons don't qualify."
+      );
+    }
+
+    if (projectedBalance > totalPaidRealMoney) {
+      throw new Error(
+        `Cannot earn more credits than paid in with real funds. You've paid $${totalPaidRealMoney.toFixed(2)}, ` +
+        `currently have $${balance.toFixed(2)} in credits, ` +
+        `and would have $${projectedBalance.toFixed(2)} after earning $${creditsAwarded.toFixed(2)}. ` +
+        `Please pay in more USDC first.`
+      );
+    }
     
     await addCredits(request.wallet, creditsAwarded, 
       `feedback:${request.endpoint}:${request.accurate ? "accurate" : "inaccurate"}`,
