@@ -24,8 +24,10 @@ const X402_CONFIG = {
   currency: "USDC",
 };
 
-// Discord Alert Configuration
+// Alert Configuration
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
 
 // Send payment alert to Discord
 async function sendPaymentAlert(path: string, paymentMethod: string, price: string) {
@@ -45,6 +47,29 @@ async function sendPaymentAlert(path: string, paymentMethod: string, price: stri
     console.log(`[ALERT] Discord notification sent for ${path}`);
   } catch (e) {
     console.error("[ALERT] Failed to send Discord notification:", e);
+  }
+}
+
+// Send payment alert to Telegram
+async function sendTelegramAlert(path: string, paymentMethod: string, price: string) {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  
+  try {
+    const emoji = paymentMethod.startsWith("x402") ? "🎉" : paymentMethod.startsWith("credits") ? "💳" : "🎫";
+    const text = `${emoji} *PAID API CALL!*\n\n*Endpoint:* \`${path}\`\n*Price:* ${price}\n*Method:* ${paymentMethod}\n*Time:* ${new Date().toISOString()}\n\n402 → 200 🔥`;
+    
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: "Markdown",
+      }),
+    });
+    console.log(`[ALERT] Telegram notification sent for ${path}`);
+  } catch (e) {
+    console.error("[ALERT] Failed to send Telegram notification:", e);
   }
 }
 
@@ -856,9 +881,10 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         if (paid) paymentMethod = "x402";
       }
 
-      // Send Discord alert for paid calls
+      // Send alerts for paid calls (Discord + Telegram)
       if (paid && paymentMethod) {
         sendPaymentAlert(path, paymentMethod, PRICING[path]?.price || "$0");
+        sendTelegramAlert(path, paymentMethod, PRICING[path]?.price || "$0");
       }
 
       // Check rate limits (safety cap for free-tier abuse)
