@@ -215,11 +215,56 @@ let metrics = {
   startedAt: new Date().toISOString(),
 };
 
-// Coupon Configuration (Simple In-Memory for Pilot)
-const COUPONS: Record<string, { remaining: number; value: number }> = {
-  "MERCURY-PILOT-2026": { remaining: 100, value: 5.00 }, // $5 credit
-  "COG-DX-TRIAL": { remaining: 50, value: 1.00 },        // $1 credit
-};
+// Coupon Configuration (PERSISTENT - survives restarts)
+const COUPON_LEDGER_FILE = "/app/data/coupon-ledger.json";
+
+interface CouponState {
+  "MERCURY-PILOT-2026": { remaining: number; value: number };
+  "COG-DX-TRIAL": { remaining: number; value: number };
+}
+
+// Load coupon state from disk, or initialize defaults
+function loadCouponState(): CouponState {
+  try {
+    const text = require("fs").readFileSync(COUPON_LEDGER_FILE, "utf-8");
+    if (text && text.length > 0) {
+      const json = JSON.parse(text) as CouponState;
+      console.log("[STARTUP] ✅ Loaded coupon state from disk:", json);
+      return json;
+    }
+  } catch (e: any) {
+    console.error("[STARTUP] ⚠️  Error loading coupon state:", e.message);
+  }
+  console.log("[STARTUP] Using default coupon state (no file found or error reading)");
+  return {
+    "MERCURY-PILOT-2026": { remaining: 80, value: 5.00 }, // $5 credit (20/100 used as of 2026-03-21)
+    "COG-DX-TRIAL": { remaining: 50, value: 1.00 },       // $1 credit
+  };
+}
+
+// Save coupon state to disk
+function saveCouponState(state: CouponState) {
+  try {
+    require("fs").writeFileSync(COUPON_LEDGER_FILE, JSON.stringify(state, null, 2));
+    console.log("[COUPON-PERSIST] ✅ Saved coupon state to disk");
+  } catch (e: any) {
+    console.error("[COUPON-PERSIST] ❌ Failed to save coupon state:", e.message);
+  }
+}
+
+const COUPONS = loadCouponState();
+
+// Coupon audit log (for evidence of all triggers)
+const couponAuditLog: Array<{
+  timestamp: string;
+  coupon: string;
+  agent_id: string;
+  endpoint: string;
+  price: number;
+  status: string;
+}> = [];
+
+
 
 // Start crash monitoring with metrics callback
 startCrashMonitor(() => ({
@@ -230,7 +275,7 @@ startCrashMonitor(() => ({
 }));
 
 serve({ hostname: '0.0.0.0',
-  port: 3100,
+  port: parseInt(process.env.PORT || "3100"),
   async fetch(req) {
     const url = new URL(req.url);
     const path = url.pathname;
@@ -728,11 +773,13 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
       });
     }
 
-    // Analytics Dashboard
+    // Analytics Dashboard (HIDDEN - internal only)
     if (path === "/dashboard") {
-      const dashboardHTML = await Bun.file(import.meta.dir + "/dashboard.html").text();
-      return new Response(dashboardHTML, {
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+      return new Response(JSON.stringify({
+        error: "Not found",
+      }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -757,6 +804,25 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         by_endpoint: metrics.byEndpoint,
         started_at: metrics.startedAt,
         uptime_ms: Date.now() - new Date(metrics.startedAt).getTime(),
+      }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Coupon Audit Log (EVIDENCE OF ALL TRIGGERS)
+    if (path === "/api/coupon-audit" && req.method === "GET") {
+      const couponFilter = url.searchParams.get("coupon");
+      const agentFilter = url.searchParams.get("agent_id");
+      
+      let filtered = couponAuditLog;
+      if (couponFilter) filtered = filtered.filter(e => e.coupon === couponFilter);
+      if (agentFilter) filtered = filtered.filter(e => e.agent_id === agentFilter);
+      
+      return new Response(JSON.stringify({
+        total_events: couponAuditLog.length,
+        filtered_events: filtered.length,
+        coupon_status: COUPONS,
+        events: filtered,
       }), {
         headers: { "Content-Type": "application/json" },
       });
@@ -896,6 +962,17 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
       const couponHeader = req.headers.get("X-COUPON");
       const walletHeader = req.headers.get("X-WALLET");
 
+      // Parse body ONCE at the top to avoid "Body already used" error
+      let requestBody: any = {};
+      try {
+        requestBody = await req.json();
+      } catch (e: any) {
+        return new Response(JSON.stringify({ error: "Invalid JSON body", message: e.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       let paid = false;
       let paymentMethod = "";
 
@@ -907,7 +984,54 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         if (coupon.remaining > 0 && coupon.value >= price) {
           paid = true;
           paymentMethod = `coupon:${couponHeader}`;
-          console.log(`[COUPON] Used ${couponHeader} for ${path}`);
+          const body = requestBody;
+          const agent_id = body.agent_id || "unknown";
+          
+          // Record to audit log
+          couponAuditLog.push({
+            timestamp: new Date().toISOString(),
+            coupon: couponHeader,
+            agent_id: agent_id,
+            endpoint: path,
+            price: price,
+            status: "APPROVED",
+          });
+          
+          console.log(`[COUPON-AUDIT] APPROVED`, {
+            coupon: couponHeader,
+            agent_id: agent_id,
+            endpoint: path,
+            price: price,
+            remaining_before: coupon.remaining,
+            remaining_after: coupon.remaining - 1,
+            timestamp: new Date().toISOString(),
+          });
+          
+          coupon.remaining--;
+          
+          // PERSIST: Save to disk immediately
+          saveCouponState(COUPONS);
+        } else {
+          // Log rejection
+          const body = requestBody;
+          const agent_id = body.agent_id || "unknown";
+          couponAuditLog.push({
+            timestamp: new Date().toISOString(),
+            coupon: couponHeader,
+            agent_id: agent_id,
+            endpoint: path,
+            price: price,
+            status: "REJECTED_DEPLETED",
+          });
+          
+          console.log(`[COUPON-AUDIT] REJECTED`, {
+            coupon: couponHeader,
+            agent_id: agent_id,
+            endpoint: path,
+            reason: coupon.remaining <= 0 ? "Coupon depleted" : "Insufficient credit",
+            remaining: coupon.remaining,
+            timestamp: new Date().toISOString(),
+          });
         }
       }
 
@@ -979,7 +1103,7 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
 
       try {
         const startTime = Date.now();
-        const body = await req.json();
+        const body = requestBody;
         const result = await handler(body);
         const responseTime = Date.now() - startTime;
 
@@ -1022,8 +1146,14 @@ Next month: /calibration_audit costs \$0.05 (rebate)<br/>
         });
       } catch (e: any) {
         // LOG: Error
+        let agent_id = "unknown";
+        try {
+          if (body && typeof body === 'object' && 'agent_id' in body) {
+            agent_id = body.agent_id;
+          }
+        } catch {}
         await logError(`Handler error on ${path}`, e, {
-          agent_id: body?.agent_id || "unknown",
+          agent_id,
           endpoint: path,
         });
 
